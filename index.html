@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Death Cheat Anlaşması</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d0d;
+      color: #e0d8c8;
+      font-family: 'Georgia', serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 28px;
+      padding: 40px 16px;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #a08060;
+      text-align: center;
+    }
+
+    /* --- Anlaşma metni --- */
+    .sozlesme {
+      max-width: 380px;
+      background: #120f0a;
+      border: 1px solid #3a2a18;
+      border-radius: 6px;
+      padding: 20px 24px;
+      font-size: 0.82rem;
+      color: #8a7560;
+      line-height: 1.9;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .sozlesme strong { color: #c0a070; font-style: normal; }
+    .sozlesme .madde { display: block; margin-top: 6px; }
+    .sozlesme .imza  { margin-top: 14px; font-size: 0.75rem; color: #4a3820; font-style: normal; letter-spacing: 0.1em; }
+
+    /* --- Sayaç kutusu --- */
+    .counter-box {
+      background: #1a1510;
+      border: 2px solid #4a3520;
+      border-radius: 8px;
+      padding: 36px 56px;
+      text-align: center;
+    }
+
+    .label {
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #6a5540;
+      margin-bottom: 8px;
+    }
+
+    .number {
+      font-size: 6rem;
+      font-weight: bold;
+      line-height: 1;
+      transition: color 0.4s;
+    }
+
+    .number.red    { color: #c0392b; }
+    .number.yellow { color: #d4a017; }
+    .number.green  { color: #5d8a5e; }
+
+    .out-of { font-size: 1rem; color: #4a3520; margin-top: 4px; }
+
+    .pips {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      max-width: 280px;
+    }
+
+    .pip {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid #4a3520;
+      background: #0d0d0d;
+      transition: background 0.3s;
+    }
+
+    .pip.done { background: #5d8a5e; border-color: #5d8a5e; }
+
+    /* --- Butonlar --- */
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 300px;
+    }
+
+    button {
+      padding: 13px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: 'Georgia', serif;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: filter 0.15s, transform 0.1s;
+    }
+
+    button:disabled { opacity: 0.35; cursor: not-allowed; filter: none; }
+    button:not(:disabled):hover  { filter: brightness(1.15); }
+    button:not(:disabled):active { transform: scale(0.97); }
+
+    .btn-good    { background: #2d5a2e; color: #a8d8a9; border: 1px solid #3d7a3e; }
+    .btn-penalty { background: #5a1a1a; color: #e8a0a0; border: 1px solid #8a2a2a; }
+    .btn-reset   { background: #1e1a14; color: #6a5540; border: 1px solid #3a2e20; font-size: 0.85rem; }
+
+    /* --- Şifre alanı --- */
+    .lock-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      width: 300px;
+    }
+
+    .lock-row input {
+      flex: 1;
+      background: #111;
+      border: 1px solid #3a2e20;
+      border-radius: 5px;
+      color: #c8b898;
+      font-family: 'Georgia', serif;
+      font-size: 0.9rem;
+      padding: 9px 12px;
+      outline: none;
+    }
+
+    .lock-row input:focus { border-color: #6a5030; }
+
+    .lock-row button {
+      padding: 9px 14px;
+      font-size: 0.85rem;
+      background: #1e1a14;
+      color: #8a7040;
+      border: 1px solid #3a2e20;
+      border-radius: 5px;
+    }
+
+    .lock-hint {
+      font-size: 0.72rem;
+      color: #3a2e20;
+      text-align: center;
+      letter-spacing: 0.08em;
+    }
+
+    /* --- Status & log --- */
+    .status-msg {
+      font-size: 0.9rem;
+      color: #a08060;
+      text-align: center;
+      min-height: 1.4em;
+      font-style: italic;
+    }
+
+    .log {
+      background: #111;
+      border: 1px solid #2a2218;
+      border-radius: 6px;
+      width: 300px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding: 10px 14px;
+      font-size: 0.76rem;
+      color: #554433;
+      line-height: 1.8;
+    }
+
+    .log p { margin: 0; }
+    .log .log-good { color: #5d8a5e; }
+    .log .log-bad  { color: #c0392b; }
+  </style>
+</head>
+<body>
+
+  <h1>&#x2620; Death Cheat Anlaşması</h1>
+
+  <div class="sozlesme">
+    İşbu belge; taraflar arasında, <strong>Death Cheat</strong> trait'inin
+    kasıtlı olarak önce alınması nedeniyle doğan hakkaniyetsiz durumu
+    gidermek amacıyla, kendi iradeleriyle ve <em>biraz</em> zorla
+    akdedilmiştir.
+    <span class="madde">&#8250; Sözü veren taraf, önüne geldiğinde <strong>Death Cheat'i almayacaktır.</strong></span>
+    <span class="madde">&#8250; Her ihlalde sayaç <strong>−2</strong> düşer. Sıfıra ulaşıldığında <strong>hesap görülür.</strong></span>
+    <span class="madde">&#8250; Anlaşma <strong>10 hak</strong> üzerine kurulmuştur; hali hazırda 2'si dürüstçe kullanılmıştır.</span>
+    <span class="imza">— tarafların rızası ve hafif zorlamasıyla imzalanmıştır —</span>
+  </div>
+
+  <div class="counter-box">
+    <div class="label">Kalan Hak</div>
+    <div class="number green" id="num">8</div>
+    <div class="out-of">/ 10</div>
+    <div class="pips" id="pips"></div>
+  </div>
+
+  <div class="buttons" id="buttons">
+    <button class="btn-good"    id="btnGood"    onclick="goodRound()"    disabled>✓ &nbsp;Almadı &nbsp;( −1 )</button>
+    <button class="btn-penalty" id="btnPenalty" onclick="penaltyRound()" disabled>&#x2620; &nbsp;Aldı! Ceza &nbsp;( −2 )</button>
+    <button class="btn-reset"   id="btnReset"  onclick="resetAll()"     disabled>&#x21BA; &nbsp;Sıfırla &nbsp;( 10'a dön )</button>
+  </div>
+
+  <div class="lock-row">
+    <input type="password" id="pwInput" placeholder="şifre..." onkeydown="if(event.key==='Enter') tryUnlock()" />
+    <button onclick="tryUnlock()">Gir</button>
+  </div>
+  <div class="lock-hint" id="lockHint">düzenlemek için şifre gerekli</div>
+
+  <div class="status-msg" id="msg"></div>
+
+  <div class="log" id="log">
+    <p style="color:#3a2e20">— kayıt —</p>
+  </div>
+
+<script>
+  let count = 8;
+  const MAX = 10;
+  let unlocked = false;
+
+  function tryUnlock() {
+    const pw = document.getElementById('pwInput').value;
+    if (pw === 'naber') {
+      unlocked = true;
+      document.getElementById('btnGood').disabled    = false;
+      document.getElementById('btnPenalty').disabled = false;
+      document.getElementById('btnReset').disabled   = false;
+      document.getElementById('lockHint').textContent = '✓ düzenleme modu açık';
+      document.getElementById('lockHint').style.color = '#5d8a5e';
+      document.getElementById('pwInput').value = '';
+    } else {
+      document.getElementById('lockHint').textContent = 'yanlış şifre.';
+      document.getElementById('lockHint').style.color = '#c0392b';
+      setTimeout(() => {
+        document.getElementById('lockHint').textContent = 'düzenlemek için şifre gerekli';
+        document.getElementById('lockHint').style.color = '';
+      }, 1500);
+    }
+  }
+
+  function render() {
+    const el = document.getElementById('num');
+    el.textContent = count;
+    el.className = 'number ' + (count <= 2 ? 'red' : count <= 5 ? 'yellow' : 'green');
+
+    const pips = document.getElementById('pips');
+    pips.innerHTML = '';
+    for (let i = 0; i < MAX; i++) {
+      const pip = document.createElement('div');
+      pip.className = 'pip' + (i < MAX - count ? ' done' : '');
+      pips.appendChild(pip);
+    }
+
+    const msg = document.getElementById('msg');
+    if (count <= 0) {
+      msg.textContent = 'Bitti. Hesap gorulur.';
+      msg.style.color = '#c0392b';
+    } else if (count === 1) {
+      msg.textContent = 'Son hak!';
+      msg.style.color = '#d4a017';
+    } else {
+      msg.textContent = '';
+    }
+  }
+
+  function addLog(text, cls) {
+    const log = document.getElementById('log');
+    const p = document.createElement('p');
+    if (cls) p.className = cls;
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    p.textContent = '[' + time + '] ' + text;
+    log.prepend(p);
+  }
+
+  function goodRound() {
+    if (!unlocked || count <= 0) return;
+    count = Math.max(0, count - 1);
+    addLog('Almadi → ' + count + ' kaldi', 'log-good');
+    render();
+  }
+
+  function penaltyRound() {
+    if (!unlocked) return;
+    count = Math.max(0, count - 2);
+    addLog('ALDI! Ceza −2 → ' + count + ' kaldi', 'log-bad');
+    render();
+  }
+
+  function resetAll() {
+    if (!unlocked) return;
+    count = MAX;
+    addLog('Sayac sifirlandi (10)', '');
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
