@@ -27,7 +27,6 @@
       text-align: center;
     }
 
-    /* --- Anlaşma metni --- */
     .sozlesme {
       max-width: 380px;
       background: #120f0a;
@@ -45,7 +44,6 @@
     .sozlesme .madde { display: block; margin-top: 6px; }
     .sozlesme .imza  { margin-top: 14px; font-size: 0.75rem; color: #4a3820; font-style: normal; letter-spacing: 0.1em; }
 
-    /* --- Sayaç kutusu --- */
     .counter-box {
       background: #1a1510;
       border: 2px solid #4a3520;
@@ -75,11 +73,19 @@
 
     .out-of { font-size: 1rem; color: #4a3520; margin-top: 4px; }
 
+    .sublabel {
+      font-size: 0.7rem;
+      color: #3a2e1a;
+      margin-top: 10px;
+      font-style: italic;
+      letter-spacing: 0.05em;
+    }
+
     .pips {
       display: flex;
       gap: 6px;
       justify-content: center;
-      margin-top: 16px;
+      margin-top: 14px;
       flex-wrap: wrap;
       max-width: 280px;
     }
@@ -88,13 +94,34 @@
       width: 20px; height: 20px;
       border-radius: 50%;
       border: 2px solid #4a3520;
-      background: #0d0d0d;
+      background: #1a1510;
       transition: background 0.3s;
+      position: relative;
     }
 
-    .pip.done { background: #5d8a5e; border-color: #5d8a5e; }
+    /* çekilen ceza = koyu kırmızı dolu */
+    .pip.served { background: #6b2020; border-color: #8a2a2a; }
+    /* kalan yükümlülük = amber/turuncu boş */
+    .pip.remaining { border-color: #7a5020; background: #1a1510; }
 
-    /* --- Butonlar --- */
+    .pip-legend {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 8px;
+      font-size: 0.65rem;
+      color: #4a3820;
+      letter-spacing: 0.06em;
+    }
+
+    .pip-legend span { display: flex; align-items: center; gap: 5px; }
+    .pip-legend .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-s { background: #6b2020; border: 1px solid #8a2a2a; }
+    .dot-r { background: #1a1510; border: 1px solid #7a5020; }
+
     .buttons {
       display: flex;
       flex-direction: column;
@@ -121,7 +148,6 @@
     .btn-penalty { background: #5a1a1a; color: #e8a0a0; border: 1px solid #8a2a2a; }
     .btn-reset   { background: #1e1a14; color: #6a5540; border: 1px solid #3a2e20; font-size: 0.85rem; }
 
-    /* --- Şifre alanı --- */
     .lock-row {
       display: flex;
       gap: 8px;
@@ -159,7 +185,6 @@
       letter-spacing: 0.08em;
     }
 
-    /* --- Status & log --- */
     .status-msg {
       font-size: 0.9rem;
       color: #a08060;
@@ -191,27 +216,33 @@
   <h1>&#x2620; Death Cheat Anlaşması</h1>
 
   <div class="sozlesme">
-    İşbu belge; taraflar arasında, <strong>Death Cheat</strong> trait'inin
-    kasıtlı olarak önce alınması nedeniyle doğan hakkaniyetsiz durumu
-    gidermek amacıyla, kendi iradeleriyle ve <em>biraz</em> zorla
-    akdedilmiştir.
-    <span class="madde">&#8250; Sözü veren taraf, önüne geldiğinde <strong>Death Cheat'i almayacaktır.</strong></span>
-    <span class="madde">&#8250; Her ihlalde sayaç <strong>−2</strong> düşer. Sıfıra ulaşıldığında <strong>hesap görülür.</strong></span>
-    <span class="madde">&#8250; Anlaşma <strong>10 hak</strong> üzerine kurulmuştur; hali hazırda 2'si dürüstçe kullanılmıştır.</span>
+    İşbu belge; <strong>Death Cheat</strong> trait'ini kasıtlı olarak önce
+    kapmak suretiyle ortağını 90 saniyelik bir koşuya mahkûm eden tarafın,
+    söz konusu haksız fiili tescil etmek ve bedelini ödemek amacıyla
+    kendi hür iradesiyle — <em>kısmen de olsa</em> — imzaladığı
+    ceza sözleşmesidir.
+    <span class="madde">&#8250; Sözü veren taraf, <strong>10 round</strong> boyunca önüne geldiğinde Death Cheat'i <strong>almayacaktır.</strong></span>
+    <span class="madde">&#8250; Buna rağmen alırsa <strong>−2 ek ceza</strong> uygulanır; süreç uzar.</span>
+    <span class="madde">&#8250; Tüm ceza tamamlandığında borç kapanır, trait serbesttir.</span>
     <span class="imza">— tarafların rızası ve hafif zorlamasıyla imzalanmıştır —</span>
   </div>
 
   <div class="counter-box">
-    <div class="label">Kalan Hak</div>
-    <div class="number green" id="num">8</div>
-    <div class="out-of">/ 10</div>
+    <div class="label">Kalan Ceza</div>
+    <div class="number yellow" id="num">8</div>
+    <div class="out-of">/ 10 round</div>
+    <div class="sublabel" id="sublabel">8 round daha almayacak</div>
     <div class="pips" id="pips"></div>
+    <div class="pip-legend">
+      <span><i class="dot dot-s"></i> çekildi</span>
+      <span><i class="dot dot-r"></i> kalan</span>
+    </div>
   </div>
 
-  <div class="buttons" id="buttons">
-    <button class="btn-good"    id="btnGood"    onclick="goodRound()"    disabled>✓ &nbsp;Almadı &nbsp;( −1 )</button>
-    <button class="btn-penalty" id="btnPenalty" onclick="penaltyRound()" disabled>&#x2620; &nbsp;Aldı! Ceza &nbsp;( −2 )</button>
-    <button class="btn-reset"   id="btnReset"  onclick="resetAll()"     disabled>&#x21BA; &nbsp;Sıfırla &nbsp;( 10'a dön )</button>
+  <div class="buttons">
+    <button class="btn-good"    id="btnGood"    onclick="goodRound()"    disabled>✓ &nbsp;Almadı — ceza −1</button>
+    <button class="btn-penalty" id="btnPenalty" onclick="penaltyRound()" disabled>&#x2620; &nbsp;Aldı! Ek ceza −2</button>
+    <button class="btn-reset"   id="btnReset"   onclick="resetAll()"     disabled>&#x21BA; &nbsp;Sıfırla &nbsp;( 10'a dön )</button>
   </div>
 
   <div class="lock-row">
@@ -254,22 +285,30 @@
   function render() {
     const el = document.getElementById('num');
     el.textContent = count;
-    el.className = 'number ' + (count <= 2 ? 'red' : count <= 5 ? 'yellow' : 'green');
+    el.className = 'number ' + (count === 0 ? 'green' : count <= 3 ? 'red' : 'yellow');
 
+    const sub = document.getElementById('sublabel');
+    if (count === 0) {
+      sub.textContent = 'ceza tamamlandı';
+    } else {
+      sub.textContent = count + ' round daha almayacak';
+    }
+
+    // pips: served = MAX-count, remaining = count
     const pips = document.getElementById('pips');
     pips.innerHTML = '';
     for (let i = 0; i < MAX; i++) {
       const pip = document.createElement('div');
-      pip.className = 'pip' + (i < MAX - count ? ' done' : '');
+      pip.className = 'pip ' + (i < MAX - count ? 'served' : 'remaining');
       pips.appendChild(pip);
     }
 
     const msg = document.getElementById('msg');
     if (count <= 0) {
-      msg.textContent = 'Bitti. Hesap gorulur.';
-      msg.style.color = '#c0392b';
+      msg.textContent = 'Ceza tamamlandı. Borç kapandı.';
+      msg.style.color = '#5d8a5e';
     } else if (count === 1) {
-      msg.textContent = 'Son hak!';
+      msg.textContent = 'Son round!';
       msg.style.color = '#d4a017';
     } else {
       msg.textContent = '';
@@ -289,14 +328,14 @@
   function goodRound() {
     if (!unlocked || count <= 0) return;
     count = Math.max(0, count - 1);
-    addLog('Almadi → ' + count + ' kaldi', 'log-good');
+    addLog('Almadi — ' + count + ' round kaldi', 'log-good');
     render();
   }
 
   function penaltyRound() {
     if (!unlocked) return;
-    count = Math.max(0, count - 2);
-    addLog('ALDI! Ceza −2 → ' + count + ' kaldi', 'log-bad');
+    count = count + 2;
+    addLog('ALDI! Ek ceza +2 → ' + count + ' round kaldi', 'log-bad');
     render();
   }
 
