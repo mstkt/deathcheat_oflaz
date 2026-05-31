@@ -104,12 +104,9 @@
       border: 2px solid #4a3520;
       background: #1a1510;
       transition: background 0.3s;
-      position: relative;
     }
 
-    /* çekilen ceza = koyu kırmızı dolu */
-    .pip.served { background: #6b2020; border-color: #8a2a2a; }
-    /* kalan yükümlülük = amber/turuncu boş */
+    .pip.served    { background: #6b2020; border-color: #8a2a2a; }
     .pip.remaining { border-color: #7a5020; background: #1a1510; }
 
     .pip-legend {
@@ -123,12 +120,27 @@
     }
 
     .pip-legend span { display: flex; align-items: center; gap: 5px; }
-    .pip-legend .dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      display: inline-block;
-    }
+    .pip-legend .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
     .dot-s { background: #6b2020; border: 1px solid #8a2a2a; }
     .dot-r { background: #1a1510; border: 1px solid #7a5020; }
+
+    /* canlı bağlantı göstergesi */
+    .sync-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #3a2e20;
+      margin-right: 5px;
+      transition: background 0.4s;
+      vertical-align: middle;
+    }
+    .sync-dot.live { background: #5d8a5e; }
+    .sync-label {
+      font-size: 0.68rem;
+      color: #3a2e20;
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
 
     .buttons {
       display: flex;
@@ -236,16 +248,16 @@
     kendi hür iradesiyle — <em>kısmen de olsa</em> — imzaladığı
     ceza sözleşmesidir.
     <span class="madde">&#8250; Sözü veren taraf, <strong>10 round</strong> boyunca önüne geldiğinde Death Cheat'i <strong>almayacaktır.</strong></span>
-    <span class="madde">&#8250; Buna rağmen alırsa <strong>−2 ek ceza</strong> uygulanır; süreç uzar.</span>
+    <span class="madde">&#8250; Buna rağmen alırsa <strong>+2 ek ceza</strong> uygulanır; süreç uzar.</span>
     <span class="madde">&#8250; Tüm ceza tamamlandığında borç kapanır, trait serbesttir.</span>
     <span class="imza">— tarafların rızası ve hafif zorlamasıyla imzalanmıştır —</span>
   </div>
 
   <div class="counter-box">
     <div class="label">Kalan Ceza</div>
-    <div class="number yellow" id="num">8</div>
+    <div class="number yellow" id="num">—</div>
     <div class="out-of">/ 10 round</div>
-    <div class="sublabel" id="sublabel">8 round daha almayacak</div>
+    <div class="sublabel" id="sublabel">bağlanıyor...</div>
     <div class="pips" id="pips"></div>
     <div class="pip-legend">
       <span><i class="dot dot-s"></i> çekildi</span>
@@ -253,9 +265,11 @@
     </div>
   </div>
 
+  <div class="sync-label"><span class="sync-dot" id="syncDot"></span><span id="syncText">bağlanıyor</span></div>
+
   <div class="buttons">
     <button class="btn-good"    id="btnGood"    onclick="goodRound()"    disabled>✓ &nbsp;Almadı — ceza −1</button>
-    <button class="btn-penalty" id="btnPenalty" onclick="penaltyRound()" disabled>&#x2620; &nbsp;Aldı! Ek ceza −2</button>
+    <button class="btn-penalty" id="btnPenalty" onclick="penaltyRound()" disabled>&#x2620; &nbsp;Aldı! Ek ceza +2</button>
     <button class="btn-reset"   id="btnReset"   onclick="resetAll()"     disabled>&#x21BA; &nbsp;Sıfırla &nbsp;( 10'a dön )</button>
   </div>
 
@@ -271,11 +285,74 @@
     <p style="color:#3a2e20">— kayıt —</p>
   </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-  let count = 8;
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmKnSet7S8JpB_na85IgZcGG71MtzO6m0",
+    authDomain: "goflazdc.firebaseapp.com",
+    databaseURL: "https://goflazdc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "goflazdc",
+    storageBucket: "goflazdc.firebasestorage.app",
+    messagingSenderId: "805469039768",
+    appId: "1:805469039768:web:3502031a8132dbd8a534ed",
+    measurementId: "G-FKV2RJBEP1"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const countRef = db.ref('count');
+  const logRef   = db.ref('log');
+
   const MAX = 10;
+  let count = null;
   let unlocked = false;
 
+  // ---- Firebase dinleyicileri ----
+
+  // Sayaç: herhangi bir cihazda değişince herkese yansır
+  countRef.on('value', snap => {
+    const val = snap.val();
+    if (val === null) {
+      // İlk kez — veritabanına 8 yaz
+      countRef.set(8);
+      return;
+    }
+    count = val;
+    render();
+    setSyncLive(true);
+  });
+
+  // Log: son 20 kaydı dinle
+  logRef.limitToLast(20).on('value', snap => {
+    const logEl = document.getElementById('log');
+    logEl.innerHTML = '';
+    const entries = [];
+    snap.forEach(child => entries.push(child.val()));
+    entries.reverse().forEach(entry => {
+      const p = document.createElement('p');
+      if (entry.cls) p.className = entry.cls;
+      p.textContent = '[' + entry.time + '] ' + entry.text;
+      logEl.appendChild(p);
+    });
+    if (entries.length === 0) {
+      logEl.innerHTML = '<p style="color:#3a2e20">— kayıt —</p>';
+    }
+  });
+
+  // ---- Bağlantı durumu göstergesi ----
+  db.ref('.info/connected').on('value', snap => {
+    setSyncLive(snap.val() === true);
+  });
+
+  function setSyncLive(live) {
+    document.getElementById('syncDot').className  = 'sync-dot' + (live ? ' live' : '');
+    document.getElementById('syncText').textContent = live ? 'canlı bağlantı' : 'bağlanıyor...';
+  }
+
+  // ---- Şifre ----
   function tryUnlock() {
     const pw = document.getElementById('pwInput').value;
     if (pw === 'naber') {
@@ -296,19 +373,16 @@
     }
   }
 
+  // ---- Render ----
   function render() {
+    if (count === null) return;
     const el = document.getElementById('num');
     el.textContent = count;
     el.className = 'number ' + (count === 0 ? 'green' : count <= 3 ? 'red' : 'yellow');
 
     const sub = document.getElementById('sublabel');
-    if (count === 0) {
-      sub.textContent = 'ceza tamamlandı';
-    } else {
-      sub.textContent = count + ' round daha almayacak';
-    }
+    sub.textContent = count === 0 ? 'ceza tamamlandı' : count + ' round daha almayacak';
 
-    // pips: served = MAX-count, remaining = count
     const pips = document.getElementById('pips');
     pips.innerHTML = '';
     for (let i = 0; i < MAX; i++) {
@@ -329,38 +403,33 @@
     }
   }
 
-  function addLog(text, cls) {
-    const log = document.getElementById('log');
-    const p = document.createElement('p');
-    if (cls) p.className = cls;
+  // ---- Log yaz ----
+  function pushLog(text, cls) {
     const now = new Date();
     const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-    p.textContent = '[' + time + '] ' + text;
-    log.prepend(p);
+    logRef.push({ time, text, cls: cls || '' });
   }
 
+  // ---- Buton aksiyonları ----
   function goodRound() {
-    if (!unlocked || count <= 0) return;
-    count = Math.max(0, count - 1);
-    addLog('Almadi — ' + count + ' round kaldi', 'log-good');
-    render();
+    if (!unlocked || count === null || count <= 0) return;
+    const next = Math.max(0, count - 1);
+    countRef.set(next);
+    pushLog('Almadi — ' + next + ' round kaldi', 'log-good');
   }
 
   function penaltyRound() {
-    if (!unlocked) return;
-    count = count + 2;
-    addLog('ALDI! Ek ceza +2 → ' + count + ' round kaldi', 'log-bad');
-    render();
+    if (!unlocked || count === null) return;
+    const next = count + 2;
+    countRef.set(next);
+    pushLog('ALDI! Ek ceza +2 → ' + next + ' round kaldi', 'log-bad');
   }
 
   function resetAll() {
     if (!unlocked) return;
-    count = MAX;
-    addLog('Sayac sifirlandi (10)', '');
-    render();
+    countRef.set(MAX);
+    pushLog('Sayac sifirlandi (10)', '');
   }
-
-  render();
 </script>
 </body>
 </html>
