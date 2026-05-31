@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Death Cheat Anlaşması</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,8 +16,13 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      gap: 28px;
-      padding: 40px 16px;
+      gap: 24px;
+      padding: 32px 16px;
+    }
+
+    .sozlesme, .buttons, .lock-row, .log {
+      width: 100%;
+      max-width: 380px;
     }
 
     h1 {
@@ -48,8 +54,10 @@
       background: #1a1510;
       border: 2px solid #4a3520;
       border-radius: 8px;
-      padding: 36px 56px;
+      padding: 28px 40px;
       text-align: center;
+      width: 100%;
+      max-width: 380px;
     }
 
     .label {
@@ -126,7 +134,8 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      width: 300px;
+      width: 100%;
+      max-width: 380px;
     }
 
     button {
@@ -152,7 +161,8 @@
       display: flex;
       gap: 8px;
       align-items: center;
-      width: 300px;
+      width: 100%;
+      max-width: 380px;
     }
 
     .lock-row input {
@@ -197,7 +207,8 @@
       background: #111;
       border: 1px solid #2a2218;
       border-radius: 6px;
-      width: 300px;
+      width: 100%;
+      max-width: 380px;
       max-height: 140px;
       overflow-y: auto;
       padding: 10px 14px;
@@ -216,9 +227,9 @@
   <h1>&#x2620; Death Cheat Anlaşması</h1>
 
   <div class="sozlesme">
-    İşbu belge; <strong>Death Cheat</strong> trait'ini kasıtlı olarak önce
-    kapmak suretiyle ortağını 90 saniyelik bir koşuya mahkûm eden tarafın,
-    söz konusu haksız fiili tescil etmek ve bedelini ödemek amacıyla
+    İşbu belge; ortağı daha haritaya basmadan <strong>Death Cheat</strong>
+    trait'ine aç gözlülükle atlayan ve "10 olsun" diyerek bu fiili bizzat
+    tescil eden tarafın, söz konusu sabırsızlığının bedelini ödemek amacıyla
     kendi hür iradesiyle — <em>kısmen de olsa</em> — imzaladığı
     ceza sözleşmesidir.
     <span class="madde">&#8250; Sözü veren taraf, <strong>10 round</strong> boyunca önüne geldiğinde Death Cheat'i <strong>almayacaktır.</strong></span>
